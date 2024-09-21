@@ -1,44 +1,49 @@
 import { ArrowButton } from 'components/arrow-button';
 import { Button } from 'components/button';
-
 import styles from './ArticleParamsForm.module.scss';
 import { Select } from '../select/Select';
 import { RadioGroup } from '../radio-group/RadioGroup';
 import {
-	OptionType,
 	backgroundColors,
 	contentWidthArr,
 	fontColors,
 	fontFamilyOptions,
 	fontSizeOptions,
+	defaultArticleState,
 } from 'src/constants/articleProps';
 import { Separator } from '../separator/Separator';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import cn from 'classnames';
+import { useRef, useState, useEffect } from 'react';
 
-type ArticleStates = {
-	fontSelectState: OptionType;
-	setFontSelectState: Dispatch<SetStateAction<OptionType>>;
-
-	fontSizeSelectState: OptionType;
-	setFontSizeSelectState: Dispatch<SetStateAction<OptionType>>;
-
-	fontColorSelectState: OptionType;
-	setFontColorSelectState: Dispatch<SetStateAction<OptionType>>;
-
-	backgroundColorSelectState: OptionType;
-	setBackgroundColorSelectState: Dispatch<SetStateAction<OptionType>>;
-
-	contentWidthSelectState: OptionType;
-	setContentWidthSelectState: Dispatch<SetStateAction<OptionType>>;
-
-	onResetClick: () => void;
-	onSubmitClick: () => void;
+type ArticleParamsFormProps = {
+	onApplyStyles: (styles: {
+		fontFamily: string;
+		fontSize: string;
+		fontColor: string;
+		backgroundColor: string;
+		contentWidth: string;
+	}) => void;
 };
 
-export const ArticleParamsForm = (props: ArticleStates) => {
-	// Хуки
+export const ArticleParamsForm = ({
+	onApplyStyles,
+}: ArticleParamsFormProps) => {
 	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [fontSelect, setFontSelect] = useState(
+		defaultArticleState.fontFamilyOption
+	);
+	const [fontSizeSelect, setFontSizeSelect] = useState(
+		defaultArticleState.fontSizeOption
+	);
+	const [fontColorSelect, setFontColorSelect] = useState(
+		defaultArticleState.fontColor
+	);
+	const [backgroundColorSelect, setBackgroundColorSelect] = useState(
+		defaultArticleState.backgroundColor
+	);
+	const [contentWidthSelect, setContentWidthSelect] = useState(
+		defaultArticleState.contentWidth
+	);
 	const asideRef = useRef<HTMLElement>(null);
 
 	useEffect(() => {
@@ -57,81 +62,76 @@ export const ArticleParamsForm = (props: ArticleStates) => {
 		};
 	}, []);
 
-	// Хэндлеры
-	const handleButtonClick = () => {
-		setIsFormOpen(!isFormOpen);
-	};
-
-	const handleFontSelectChange = (fontSelected: OptionType) => {
-		props.setFontSelectState(fontSelected);
-	};
-	const handleFontSizeSelectChange = (fontSizeSelected: OptionType) => {
-		props.setFontSizeSelectState(fontSizeSelected);
-	};
-	const handleFontColorSelectChange = (fontColorSelected: OptionType) => {
-		props.setFontColorSelectState(fontColorSelected);
-	};
-	const handleBackgroundColorSelectChange = (
-		backgroundColorSelected: OptionType
-	) => {
-		props.setBackgroundColorSelectState(backgroundColorSelected);
-	};
-	const handleContentWidthSelectChange = (contentWidthSelected: OptionType) => {
-		props.setContentWidthSelectState(contentWidthSelected);
-	};
-
 	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		props.onSubmitClick();
+		onApplyStyles({
+			fontFamily: fontSelect.value,
+			fontSize: fontSizeSelect.value,
+			fontColor: fontColorSelect.value,
+			backgroundColor: backgroundColorSelect.value,
+			contentWidth: contentWidthSelect.value,
+		});
+	};
+
+	const handleReset = () => {
+		setFontSelect(defaultArticleState.fontFamilyOption);
+		setFontSizeSelect(defaultArticleState.fontSizeOption);
+		setFontColorSelect(defaultArticleState.fontColor);
+		setBackgroundColorSelect(defaultArticleState.backgroundColor);
+		setContentWidthSelect(defaultArticleState.contentWidth);
+		onApplyStyles({
+			fontFamily: defaultArticleState.fontFamilyOption.value,
+			fontSize: defaultArticleState.fontSizeOption.value,
+			fontColor: defaultArticleState.fontColor.value,
+			backgroundColor: defaultArticleState.backgroundColor.value,
+			contentWidth: defaultArticleState.contentWidth.value,
+		});
 	};
 
 	const container = isFormOpen ? styles.container_open : styles.container;
 
 	return (
 		<>
-			<ArrowButton onClick={handleButtonClick} isOpen={isFormOpen} />
+			<ArrowButton
+				onClick={() => setIsFormOpen(!isFormOpen)}
+				isOpen={isFormOpen}
+			/>
 			<aside className={cn(styles.container, container)} ref={asideRef}>
 				<form className={styles.form} onSubmit={handleSubmit}>
 					<Select
-						selected={props.fontSelectState}
+						selected={fontSelect}
 						options={fontFamilyOptions}
-						onChange={(fontSelected: OptionType) => {
-							handleFontSelectChange(fontSelected);
-						}}
+						onChange={setFontSelect}
 						title='Шрифт'
 					/>
 					<RadioGroup
 						name='radioFonts'
 						options={fontSizeOptions}
-						selected={props.fontSizeSelectState}
+						selected={fontSizeSelect}
 						title='размер шрифта'
-						onChange={handleFontSizeSelectChange}
+						onChange={setFontSizeSelect}
 					/>
 					<Select
-						selected={props.fontColorSelectState}
+						selected={fontColorSelect}
 						options={fontColors}
-						onChange={handleFontColorSelectChange}
+						onChange={setFontColorSelect}
 						title='цвет шрифта'
 					/>
 					<Separator />
 					<Select
-						selected={props.backgroundColorSelectState}
+						selected={backgroundColorSelect}
 						options={backgroundColors}
-						onChange={handleBackgroundColorSelectChange}
+						onChange={setBackgroundColorSelect}
 						title='цвет фона'
 					/>
 					<Select
-						selected={props.contentWidthSelectState}
+						selected={contentWidthSelect}
 						options={contentWidthArr}
-						onChange={handleContentWidthSelectChange}
+						onChange={setContentWidthSelect}
 						title='ширина контента'
 					/>
 					<div className={styles.bottomContainer}>
-						<Button
-							title='Сбросить'
-							type='reset'
-							onClick={props.onResetClick}
-						/>
+						<Button title='Сбросить' type='button' onClick={handleReset} />
 						<Button title='Применить' type='submit' />
 					</div>
 				</form>
